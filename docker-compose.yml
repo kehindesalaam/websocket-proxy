@@ -1,0 +1,38 @@
+version: '2.1'
+
+services:
+  mss:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/go/src/github.com/terawork-com/message-socket-service
+    depends_on:
+      - mysql
+    environment:
+      DEBUG: 'true'
+      LOG_LEVEL: 'debug'
+      DB_USER: terawork
+      DB_PASSWORD: terawork
+      DB_PORT: 3306
+      DB_NAME: terawork
+      DB_HOST: mysql
+    command: "CompileDaemon --exclude-dir=vendor --build='make build' --command='bin/message-socket-service'"
+    ports:
+      - '8000:8000'
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - '8041:3306'
+    environment:
+      LC_ALL: C.UTF-8
+      MYSQL_DATABASE: terawork
+      MYSQL_USER: terawork
+      MYSQL_PASSWORD: terawork
+      MYSQL_ROOT_PASSWORD: terawork
+    healthcheck:
+      test: ["CMD-SHELL", 'mysqladmin ping --silent']
+      interval: 5s
+      timeout: 5s
+      retries: 5
